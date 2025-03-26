@@ -81,6 +81,13 @@ The Shift Project is built to provide an efficient and user-friendly experience 
 
    Navigate to [http://localhost:3000](http://localhost:3000) to view the application.
 
+5. **Test Credentials:**
+
+```bash
+   Username: admin@admin.com
+   Password: adminadmin
+```
+
 ## API Endpoints
 
 ### Authentication
@@ -246,26 +253,64 @@ If the favorite does not exist, the API returns a 404 status code with an error 
 
 Below is an overview of the project structure:
 
-```
-shift-project/
-├── app
+## Updated Project Structure
+
+```bash
+SHIFT-PROJECT/
+├── tests
 │   ├── api
-│   │   ├── login/route.ts        // Login API endpoint
-│   │   ├── university/route.ts   // University search API endpoint
-│   │   └── favorite/route.ts     // Favorites management API endpoint
-│   ├── components
-│   │   └── withAuth.ts           // Higher-order component for protected routes
-│   ├── context
-│   │   └── AuthContext.tsx       // Authentication context provider
-│   ├── pages
-│   │   ├── search/page.tsx       // University search page
-│   │   ├── favorites/page.tsx    // Favorites page
-│   │   └── login/page.tsx        // Login page
-│   └── header.tsx                // Application header with navigation
+│   │   ├── favorites.test.ts
+│   │   ├── login.test.ts
+│   │   └── universities.test.ts
+│   └── app
+│       ├── FavoritesPage.test.tsx
+│       ├── Header.test.tsx
+│       ├── LoginPage.test.tsx
+│       ├── page.test.tsx
+│       └── withAuth.test.tsx
 ├── prisma
-│   └── seed.js                   // Database seed file
-├── package.json                  // Project metadata and dependencies
-└── tsconfig.json                 // TypeScript configuration
+│   ├── schema.prisma
+│   └── seed.ts
+├── src
+│   ├── app
+│   │   ├── api
+│   │   │   ├── favorites
+│   │   │   │   └── route.ts
+│   │   │   ├── login
+│   │   │   │   └── route.ts
+│   │   │   └── universities
+│   │   │       └── route.ts
+│   │   ├── components
+│   │   │   └── Header.tsx
+│   │   ├── context
+│   │   │   └── AuthContext.tsx
+│   │   ├── favorites
+│   │   │   └── page.tsx
+│   │   ├── login
+│   │   │   └── page.tsx
+│   │   ├── search
+│   │   │   └── page.tsx
+│   │   ├── utils
+│   │   │   ├── authFetch.ts
+│   │   │   └── authMiddleware.ts
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── globals.css
+│   │   └── favicon.ico
+│   ├── .env
+│   ├── .env.local
+│   ├── Dockerfile
+│   ├── jest.config.js
+│   ├── jest.setup.ts
+│   ├── next-env.d.ts
+│   ├── next.config.js
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── README.md
+│   ├── tailwind.config.js
+│   └── tsconfig.json
+├── .dockerignore
+└── .gitignore
 ```
 
 ## License
