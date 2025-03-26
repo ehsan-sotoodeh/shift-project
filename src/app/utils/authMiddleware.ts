@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export function verifyToken(token: string) {
     try {
-        return jwt.verify(token, process.env.JWT_SECRET as string);
+        return jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret_here" as string);
     } catch (error) {
         console.error("Error verifying token:", error);
         return null;

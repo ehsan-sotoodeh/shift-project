@@ -34,7 +34,7 @@ export async function POST(request: Request) {
         // Generate JWT using environment variables for secret and expiration
         const token = jwt.sign(
             { userId: user.id, email: user.email },
-            process.env.JWT_SECRET as string,
+            process.env.JWT_SECRET || "your_jwt_secret_here" as string,
             { expiresIn: process.env.JWT_EXPIRES_IN ? parseInt(process.env.JWT_EXPIRES_IN, 10) : '86400s' }
         );
 
