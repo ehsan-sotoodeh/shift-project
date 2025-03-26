@@ -33,7 +33,7 @@ jest.mock('next/server', () => {
 
 // --- END OF MOCKS ---
 
-import { GET } from '../../src/app/api/universities/route'; // Adjust the path as needed
+import { GET } from '@/app/api/universities/route'; // Adjust the path as needed
 
 describe('Universities API GET route', () => {
   beforeEach(() => {

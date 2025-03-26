@@ -45,7 +45,7 @@ import {
     GET as GETFavorites,
     POST as POSTFavorite,
     DELETE as DELETEFavorite,
-} from '../../src/app/api/favorites/route'; // Adjust the path as needed
+} from '@/app/api/favorites/route'; // Adjust the path as needed
 
 describe('Favorites API', () => {
     describe('GET route', () => {

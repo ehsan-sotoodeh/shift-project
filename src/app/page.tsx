@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast"; // Import toast
-import { withAuth } from "../app/components/withAuth"; // Adjust the path as needed
+import { withAuth } from "@/app/components/withAuth"; // Adjust the path as needed
 import { authFetch } from "@/app/utils/authFetch";
 
 function SearchPage() {

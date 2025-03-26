@@ -7,7 +7,7 @@ import {
   fireEvent,
   within,
 } from "@testing-library/react";
-import FavoritesPage from "../../src/app/favorites/page"; // Adjust path as needed
+import FavoritesPage from "@/app/favorites/page"; // Adjust path as needed
 import "@testing-library/jest-dom";
 
 describe("FavoritesPage Component", () => {
