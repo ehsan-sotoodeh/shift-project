@@ -36,7 +36,7 @@ export default function Header() {
             className="p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
             aria-label="Favorites"
           >
-            <i className="fas fa-heart text-xl"></i>
+            <i className="fas fa-bookmark text-xl"></i>
           </Link>
           <button
             className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"

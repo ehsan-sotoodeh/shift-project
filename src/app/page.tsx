@@ -1,104 +1,299 @@
-import Image from "next/image";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import toast from "react-hot-toast"; // Import toast
 
-export default function Home() {
+export default function SearchPage() {
+  const [country, setCountry] = useState("Canada");
+  const [name, setName] = useState("");
+  const [universities, setUniversities] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const pageSize = 10; // or you could add this as state if you want it to be dynamic
+
+  interface IFavorite {
+    favoriteId: number;
+    universityId: number;
+  }
+  const [favorites, setFavorites] = useState<IFavorite[]>([]);
+
+  // Fetch search results with pagination
+  const fetchUniversities = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `/api/universities?country=${country}&name=${name}&page=${page}&pageSize=${pageSize}`
+      );
+      const data = await res.json();
+      setUniversities(data.data || []);
+      setTotal(data.total || 0);
+    } catch (error) {
+      console.error("Error fetching universities:", error);
+      toast.error("Error fetching universities.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch favorites
+  const fetchFavorites = async () => {
+    try {
+      const res = await fetch("/api/favorites");
+      const data = await res.json();
+      const fetchedFavorites = data.data.map((fav: any): IFavorite => {
+        return { favoriteId: fav.id, universityId: fav.universityId };
+      });
+      setFavorites(fetchedFavorites);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      toast.error("Error fetching favorites.");
+    }
+  };
+
+  useEffect(() => {
+    fetchUniversities();
+  }, [country, name, page]);
+
+  useEffect(() => {
+    fetchFavorites();
+  }, []);
+
+  const addFavorite = async (universityId: number) => {
+    try {
+      const res = await fetch("/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ universityId }),
+      });
+      const result = await res.json();
+      if (result.statusCode === 201) {
+        setFavorites((prev) => [
+          ...prev,
+          { favoriteId: result.data.id, universityId },
+        ]);
+        toast.success("Favorite added successfully.");
+      }
+    } catch (error) {
+      console.error("Error adding favorite:", error);
+      toast.error("Error adding favorite.");
+    }
+  };
+
+  const removeFavorite = async (universityId: number) => {
+    const selectedFavorite = favorites.find(
+      (f) => f.universityId === universityId
+    );
+    if (!selectedFavorite) {
+      console.error("Favorite not found for universityId:", universityId);
+      toast.error("Favorite not found.");
+      return;
+    }
+    try {
+      const res = await fetch(
+        `/api/favorites?id=${selectedFavorite.favoriteId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const result = await res.json();
+      if (result.statusCode === 200) {
+        setFavorites((prev) =>
+          prev.filter(
+            (f: IFavorite) => f.favoriteId !== selectedFavorite.favoriteId
+          )
+        );
+        toast.success("Favorite removed successfully.");
+      }
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      toast.error("Error removing favorite.");
+    }
+  };
+
+  const handleFavoriteToggle = (universityId: number) => {
+    if (favorites.some((f) => f.universityId === universityId)) {
+      removeFavorite(universityId);
+    } else {
+      addFavorite(universityId);
+    }
+  };
+
+  // Pagination navigation handlers
+  const totalPages = Math.ceil(total / pageSize);
+
+  const handlePreviousPage = () => {
+    setPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  // Reset page to 1 when filters change
+  const handleFilterReset = () => {
+    setCountry("Canada");
+    setName("");
+    setPage(1);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            <h1>Hello World</h1>
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-6">University Search</h1>
+      <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <label htmlFor="country" className="font-medium">
+            <i className="fa fa-filter text-gray-400"></i>
+          </label>
+          <div className="relative">
+            <select
+              id="country"
+              data-testid="country-select"
+              value={country}
+              onChange={(e) => {
+                setCountry(e.target.value);
+                setPage(1); // reset page on filter change
+              }}
+              className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 pr-8"
+            >
+              <option value="Canada">🇨🇦 Canada</option>
+              <option value="United States">🇺🇸 United States</option>
+              <option value="United Kingdom">🇬🇧 United Kingdom</option>
+              {/* Add more country options as needed */}
+            </select>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <div className="flex items-center gap-2">
+          <label htmlFor="name" className="font-medium">
+            <i className="fa fa-search text-gray-400"></i>
+          </label>
+          <div className="relative">
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                setPage(1); // reset page on filter change
+              }}
+              placeholder="Search by name"
+              className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 pr-8"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleFilterReset}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-4 py-2 rounded transition duration-200"
+          >
+            <i className="fa-solid fa-filter-circle-xmark mr-2"></i>
+            Clear All Filters
+          </button>
+        </div>
+      </div>
+      {loading ? (
+        <p className="text-center text-gray-600">Loading...</p>
+      ) : (
+        <>
+          {/* Make table container scrollable on smaller screens */}
+          <div className="overflow-x-auto mb-6">
+            <table className="min-w-full w-full table-auto border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border p-2 text-left">Name</th>
+                  <th className="border p-2 text-left">State/Province</th>
+                  <th className="border p-2 text-left">Website</th>
+                  <th className="border p-2 text-center">Favorite</th>
+                </tr>
+              </thead>
+              <tbody>
+                {universities.length > 0 ? (
+                  universities.map((uni: any) => (
+                    <tr key={uni.id} className="hover:bg-gray-50">
+                      <td className="border p-2">{uni.name}</td>
+                      <td className="border p-2">
+                        {uni.stateProvince || "N/A"}
+                      </td>
+                      <td className="border p-2">
+                        <a
+                          href={uni.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline break-all"
+                        >
+                          {uni.website}
+                        </a>
+                      </td>
+                      <td className="border p-2 text-center">
+                        <div className="flex justify-center">
+                          {favorites.some((f) => f.universityId === uni.id) ? (
+                            <button
+                              onClick={() => handleFavoriteToggle(uni.id)}
+                              name="Remove from Favorites"
+                              className="flex items-center justify-center gap-1 text-red-500 text-lg font-bold px-3 py-1 rounded transition duration-200"
+                            >
+                              <i className="fa fa-trash"></i>
+                            </button>
+                          ) : (
+                            <button
+                              name="Add to Favorites"
+                              onClick={() => handleFavoriteToggle(uni.id)}
+                              className="flex items-center justify-center gap-1 text-blue-500 text-lg font-bold px-3 py-1 rounded transition duration-200"
+                            >
+                              <i className="fa fa-bookmark"></i>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="border p-4 text-center text-gray-500"
+                    >
+                      No universities found based on the search criteria.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {/* Pagination Controls */}
+          <div className="flex justify-between items-center w-full md:w-[350px] mx-auto">
+            <button
+              onClick={handlePreviousPage}
+              disabled={page === 1}
+              className="px-4 py-2 rounded flex items-center gap-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+            >
+              <i className="fa-solid fa-chevron-left"></i>
+              Previous
+            </button>
+            <span className="font-bold text-lg">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={page === totalPages || totalPages === 0}
+              className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 flex items-center gap-2"
+            >
+              Next
+              <i className="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </>
+      )}
+      <div className="text-right mt-4">
+        <Link
+          href="/favorites"
+          className="text-blue-500 hover:underline font-medium"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Go to Favorites
+        </Link>
+      </div>
     </div>
   );
 }
