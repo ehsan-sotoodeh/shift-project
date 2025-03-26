@@ -116,7 +116,7 @@ describe("SearchPage Component", () => {
     await screen.findByText("University A");
 
     // Change the country and name input values.
-    const select = screen.getByLabelText(/Country:/);
+    const select = screen.getByTestId("country-select");
     const input = screen.getByPlaceholderText(/Search by name/i);
     fireEvent.change(select, { target: { value: "United States" } });
     fireEvent.change(input, { target: { value: "Test University" } });

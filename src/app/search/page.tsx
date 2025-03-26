@@ -146,11 +146,11 @@ export default function SearchPage() {
         <div className="flex items-center gap-2">
           <label htmlFor="country" className="font-medium">
             <i className="fa fa-filter text-gray-400"></i>
-            Country:
           </label>
           <div className="relative">
             <select
               id="country"
+              data-testid="country-select"
               value={country}
               onChange={(e) => {
                 setCountry(e.target.value);
@@ -183,20 +183,23 @@ export default function SearchPage() {
             />
           </div>
         </div>
-        <button
-          onClick={handleFilterReset}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-4 py-2 rounded transition duration-200"
-        >
-          <i className="fa-solid fa-filter-circle-xmark mr-2"></i>
-          Clear All Filters
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleFilterReset}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-4 py-2 rounded transition duration-200"
+          >
+            <i className="fa-solid fa-filter-circle-xmark mr-2"></i>
+            Clear All Filters
+          </button>
+        </div>
       </div>
       {loading ? (
         <p className="text-center text-gray-600">Loading...</p>
       ) : (
         <>
+          {/* Make table container scrollable on smaller screens */}
           <div className="overflow-x-auto mb-6">
-            <table className="min-w-full border-collapse">
+            <table className="min-w-full w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-100">
                   <th className="border p-2 text-left">Name</th>
@@ -218,7 +221,7 @@ export default function SearchPage() {
                           href={uni.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
+                          className="text-blue-500 hover:underline break-all"
                         >
                           {uni.website}
                         </a>
@@ -261,13 +264,12 @@ export default function SearchPage() {
           </div>
           {/* Pagination Controls */}
           <div
-            className="flex justify-between items-center"
-            style={{ width: "350px", margin: "0 auto" }}
+            className="flex justify-between items-center w-full md:w-[350px] mx-auto"
           >
             <button
               onClick={handlePreviousPage}
               disabled={page === 1}
-              className="px-4 py-2 rounded flex items-center gap-2"
+              className="px-4 py-2 rounded flex items-center gap-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
             >
               <i className="fa-solid fa-chevron-left"></i>
               Previous
@@ -278,10 +280,10 @@ export default function SearchPage() {
             <button
               onClick={handleNextPage}
               disabled={page === totalPages || totalPages === 0}
-              className="px-4 py-2 rounded"
+              className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 flex items-center gap-2"
             >
               Next
-              <i className="fa-solid fa-chevron-right ml-2"></i>
+              <i className="fa-solid fa-chevron-right"></i>
             </button>
           </div>
         </>
