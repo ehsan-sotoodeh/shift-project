@@ -1,9 +1,12 @@
 // __tests__/api/universities.test.ts
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // --- MOCKS (must be at the very top) ---
 var mockFindMany: jest.Mock;
 var mockCount: jest.Mock;
 
+// Mock PrismaClient so that we can control the behavior of university.count and university.findMany.
 jest.mock('@prisma/client', () => {
   mockFindMany = jest.fn();
   mockCount = jest.fn();
@@ -31,6 +34,10 @@ jest.mock('next/server', () => {
   };
 });
 
+// Mock requireAuth to return null (i.e. no auth error) so the API handler proceeds normally.
+jest.mock('../../src/app/utils/authMiddleware', () => ({
+  requireAuth: jest.fn(() => null),
+}));
 // --- END OF MOCKS ---
 
 import { GET } from '@/app/api/universities/route'; // Adjust the path as needed
@@ -113,8 +120,11 @@ describe('Universities API GET route', () => {
 
   test('should return 500 and error message when an exception is thrown', async () => {
     const errorMessage = 'Test error';
-    // Simulate error for count or findMany
+    // Simulate error for count or findMany.
     mockCount.mockRejectedValue(new Error(errorMessage));
+
+    // Silence the error logging for this test.
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
 
     const request = new Request('http://localhost');
     const response = await GET(request);
@@ -124,5 +134,8 @@ describe('Universities API GET route', () => {
     expect(data.statusCode).toBe(500);
     expect(data.message).toBe('Internal Server Error');
     expect(data.error).toBe(errorMessage);
+
+    // Restore console.error
+    consoleErrorSpy.mockRestore();
   });
 });

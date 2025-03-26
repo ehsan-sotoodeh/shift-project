@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
     const authResult = requireAuth(request);
-    if (authResult instanceof NextResponse) {
+    if (authResult && typeof authResult.json === 'function') {
         return authResult;
     }
 
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     const authResult = requireAuth(request);
-    if (authResult instanceof NextResponse) {
+    if (authResult && typeof authResult.json === 'function') {
         return authResult;
     }
 
@@ -78,9 +78,10 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
     const authResult = requireAuth(request);
-    if (authResult instanceof NextResponse) {
+    if (authResult && typeof authResult.json === 'function') {
         return authResult;
     }
+
 
     try {
         const { searchParams } = new URL(request.url);

@@ -10,6 +10,23 @@ import {
 import FavoritesPage from "@/app/favorites/page"; // Adjust path as needed
 import "@testing-library/jest-dom";
 
+// Mock AuthContext so that useAuth returns a dummy user.
+jest.mock("../../src/app/context/AuthContext", () => ({
+  useAuth: () => ({
+    user: { id: "test-user", name: "Test User" },
+    // Add any other properties if needed.
+    loading: false,
+  }),
+}));
+
+// Also, mock next/navigation to provide a dummy router.
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    prefetch: jest.fn(),
+  }),
+}));
+
 describe("FavoritesPage Component", () => {
   // Updated favorites response including pagination fields.
   const favoritesResponse = {
