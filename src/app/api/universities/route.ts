@@ -1,10 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { requireAuth } from '@/app/utils/authMiddleware';
+
 
 const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
+    const authResult = requireAuth(request);
+    if (authResult instanceof NextResponse) {
+        return authResult;
+    }
+
     const startTime = Date.now();
     const { searchParams } = new URL(request.url);
     const country = searchParams.get('country');
@@ -45,7 +52,7 @@ export async function GET(request: Request) {
             pageSize
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return NextResponse.json({
             statusCode: 500,

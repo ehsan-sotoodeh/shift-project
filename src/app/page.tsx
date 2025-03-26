@@ -4,8 +4,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast"; // Import toast
+import { withAuth } from "../app/components/withAuth"; // Adjust the path as needed
+import { authFetch } from "@/app/utils/authFetch";
 
-export default function SearchPage() {
+function SearchPage() {
   const [country, setCountry] = useState("Canada");
   const [name, setName] = useState("");
   const [universities, setUniversities] = useState([]);
@@ -24,7 +26,7 @@ export default function SearchPage() {
   const fetchUniversities = async () => {
     setLoading(true);
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `/api/universities?country=${country}&name=${name}&page=${page}&pageSize=${pageSize}`
       );
       const data = await res.json();
@@ -41,7 +43,7 @@ export default function SearchPage() {
   // Fetch favorites
   const fetchFavorites = async () => {
     try {
-      const res = await fetch("/api/favorites");
+      const res = await authFetch("/api/favorites");
       const data = await res.json();
       const fetchedFavorites = data.data.map((fav: any): IFavorite => {
         return { favoriteId: fav.id, universityId: fav.universityId };
@@ -63,7 +65,7 @@ export default function SearchPage() {
 
   const addFavorite = async (universityId: number) => {
     try {
-      const res = await fetch("/api/favorites", {
+      const res = await authFetch("/api/favorites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ universityId }),
@@ -92,7 +94,7 @@ export default function SearchPage() {
       return;
     }
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `/api/favorites?id=${selectedFavorite.favoriteId}`,
         {
           method: "DELETE",
@@ -291,9 +293,11 @@ export default function SearchPage() {
           href="/favorites"
           className="text-blue-500 hover:underline font-medium"
         >
-          Go to Favorites
+          Back to Search
         </Link>
       </div>
     </div>
   );
 }
+
+export default withAuth(SearchPage);

@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast"; // Import toast
-
-export default function FavoritesPage() {
+import { withAuth } from "@/app/components/withAuth"; // Import useAuth hook
+import { authFetch } from "@/app/utils/authFetch"; // Import authFetch function
+function FavoritesPage() {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -14,7 +15,7 @@ export default function FavoritesPage() {
   const fetchFavorites = async () => {
     setLoading(true);
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `/api/favorites?page=${page}&pageSize=${pageSize}`
       );
       const data = await res.json();
@@ -34,7 +35,9 @@ export default function FavoritesPage() {
 
   const removeFavorite = async (id: number) => {
     try {
-      const res = await fetch(`/api/favorites?id=${id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/favorites?id=${id}`, {
+        method: "DELETE",
+      });
       const result = await res.json();
       if (result.statusCode === 200) {
         // Immediately update UI without a full refetch.
@@ -146,3 +149,5 @@ export default function FavoritesPage() {
     </div>
   );
 }
+
+export default withAuth(FavoritesPage);

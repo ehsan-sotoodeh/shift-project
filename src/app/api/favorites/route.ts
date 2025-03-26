@@ -1,10 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { requireAuth } from '@/app/utils/authMiddleware';
 
 const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
+    const authResult = requireAuth(request);
+    if (authResult instanceof NextResponse) {
+        return authResult;
+    }
+
     const { searchParams } = new URL(request.url);
     const pageParam = searchParams.get('page');
     const pageSizeParam = searchParams.get('pageSize');
@@ -44,6 +50,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+    const authResult = requireAuth(request);
+    if (authResult instanceof NextResponse) {
+        return authResult;
+    }
+
     try {
         const body = await request.json();
         const { universityId } = body;
@@ -66,6 +77,11 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+    const authResult = requireAuth(request);
+    if (authResult instanceof NextResponse) {
+        return authResult;
+    }
+
     try {
         const { searchParams } = new URL(request.url);
         const favoriteId = searchParams.get('id');
