@@ -38,53 +38,61 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>Favorites</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-6">Favorites</h1>
       {loading ? (
-        <p>Loading favorites...</p>
+        <p className="text-center text-gray-600">Loading favorites...</p>
       ) : favorites.length === 0 ? (
-        <p>No favorites added yet.</p>
+        <p className="text-center text-gray-600">No favorites added yet.</p>
       ) : (
-        <table
-          border={1}
-          cellPadding={8}
-          cellSpacing={0}
-          style={{ width: "100%", marginBottom: "1rem" }}
-        >
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>State/Province</th>
-              <th>Website</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {favorites.map((fav: any) => (
-              <tr key={fav.id}>
-                <td>{fav.university.name}</td>
-                <td>{fav.university.stateProvince || "N/A"}</td>
-                <td>
-                  <a
-                    href={fav.university.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {fav.university.website}
-                  </a>
-                </td>
-                <td>
-                  <button onClick={() => removeFavorite(fav.id)}>
-                    Remove from Favorites
-                  </button>
-                </td>
+        <div className="overflow-x-auto mb-6">
+          <table className="min-w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border p-2 text-left">Name</th>
+                <th className="border p-2 text-left">State/Province</th>
+                <th className="border p-2 text-left">Website</th>
+                <th className="border p-2 text-center">Favorite</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {favorites.map((fav: any) => (
+                <tr key={fav.id} className="hover:bg-gray-50">
+                  <td className="border p-2">{fav.university.name}</td>
+                  <td className="border p-2">
+                    {fav.university.stateProvince || "N/A"}
+                  </td>
+                  <td className="border p-2">
+                    <a
+                      href={fav.university.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {fav.university.website}
+                    </a>
+                  </td>
+                  <td className="border p-2 text-center">
+                    <button
+                      onClick={() => removeFavorite(fav.id)}
+                      className="flex items-center justify-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition duration-200"
+                    >
+                      <i className="fa-solid fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-      <div>
-        <Link href="/search">Back to Search</Link>
+      <div className="text-right">
+        <Link
+          href="/search"
+          className="text-blue-500 hover:underline font-medium"
+        >
+          Back to Search
+        </Link>
       </div>
     </div>
   );

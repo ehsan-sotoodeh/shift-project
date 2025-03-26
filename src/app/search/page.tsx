@@ -9,27 +9,18 @@ export default function SearchPage() {
   const [name, setName] = useState("");
   const [universities, setUniversities] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [responseCode, setResponseCode] = useState(null);
-  const [responseTime, setResponseTime] = useState(null);
   interface IFavorite {
     favoriteId: number;
     universityId: number;
   }
-
   const [favorites, setFavorites] = useState<IFavorite[]>([]);
 
   // Fetch search results
   const fetchUniversities = async () => {
     setLoading(true);
-    const startTime = Date.now();
     try {
-      const res = await fetch(
-        `/api/universities?country=${country}&name=${name}`
-      );
+      const res = await fetch(`/api/universities?country=${country}&name=${name}`);
       const data = await res.json();
-      const endTime = Date.now();
-      setResponseCode(data.statusCode);
-      setResponseTime(data.responseTime || endTime - startTime);
       setUniversities(data.data || []);
     } catch (error) {
       console.error("Error fetching universities:", error);
@@ -43,8 +34,6 @@ export default function SearchPage() {
     try {
       const res = await fetch("/api/favorites");
       const data = await res.json();
-      // Assuming the API returns an array of favorite objects with a universityId field.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fetchedFavorites = data.data.map((fav: any): IFavorite => {
         return { favoriteId: fav.id, universityId: fav.universityId };
       });
@@ -90,18 +79,13 @@ export default function SearchPage() {
       return;
     }
     try {
-      const res = await fetch(
-        `/api/favorites?id=${selectedFavorite.favoriteId}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const res = await fetch(`/api/favorites?id=${selectedFavorite.favoriteId}`, {
+        method: "DELETE",
+      });
       const result = await res.json();
       if (result.statusCode === 200) {
         setFavorites((prev) =>
-          prev.filter(
-            (f: IFavorite) => f.favoriteId !== selectedFavorite.favoriteId
-          )
+          prev.filter((f: IFavorite) => f.favoriteId !== selectedFavorite.favoriteId)
         );
       }
     } catch (error) {
@@ -118,90 +102,125 @@ export default function SearchPage() {
   };
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>University Search</h1>
-      <div style={{ marginBottom: "1rem" }}>
-        <label style={{ marginRight: "1rem" }}>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-6">University Search</h1>
+      <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <label htmlFor="country" className="font-medium">
+          <i className="fa fa-filter  text-gray-400"></i>
           Country:
-          <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            style={{ marginLeft: "0.5rem" }}
-          >
-            <option value="Canada">Canada</option>
-            <option value="United States">United States</option>
-            <option value="United Kingdom">United Kingdom</option>
-            {/* Add more country options as needed */}
-          </select>
-        </label>
-        <label style={{ marginRight: "1rem" }}>
-          Name:
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Search by name"
-            style={{ marginLeft: "0.5rem" }}
-          />
-        </label>
+          </label>
+          <div className="relative">
+            <select
+              id="country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 pr-8"
+            >
+              <option value="Canada">🇨🇦 Canada</option>
+              <option value="United States">🇺🇸 United States</option>
+              <option value="United Kingdom">🇬🇧 United Kingdom</option>
+              {/* Add more country options as needed */}
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <label htmlFor="name" className="font-medium">
+          <i className="fa fa-search text-gray-400"></i>
+          </label>
+            <div className="relative">
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Search by name"
+              className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 pr-8"
+            />
+            </div>
+        </div>
         <button
           onClick={() => {
             setCountry("Canada");
             setName("");
           }}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-4 py-2 rounded transition duration-200"
         >
+            <i className="fa-solid fa-filter-circle-xmark mr-2"></i>
           Clear All Filters
         </button>
       </div>
-      <div style={{ marginBottom: "1rem" }}>
-        <p>Response Code: {responseCode !== null ? responseCode : "N/A"}</p>
-        <p>Response Time: {responseTime !== null ? responseTime : "N/A"} ms</p>
-      </div>
+      {/* <div className="mb-6">
+        <p className="text-sm">
+          <span className="font-medium">Response Code:</span> {responseCode !== null ? responseCode : "N/A"}
+        </p>
+        <p className="text-sm">
+          <span className="font-medium">Response Time:</span> {responseTime !== null ? responseTime : "N/A"} ms
+        </p>
+      </div> */}
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-center text-gray-600">Loading...</p>
       ) : (
-        <table
-          border={1}
-          cellPadding={8}
-          cellSpacing={0}
-          style={{ width: "100%", marginBottom: "1rem" }}
-        >
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>State/Province</th>
-              <th>Website</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {universities.map((uni: any) => (
-              <tr key={uni.id}>
-                <td>{uni.name}</td>
-                <td>{uni.stateProvince || "N/A"}</td>
-                <td>
-                  <a
-                    href={uni.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {uni.website}
-                  </a>
-                </td>
-                <td>
-                  <button onClick={() => handleFavoriteToggle(uni.id)}>
-                    {favorites.some((f) => f.universityId === uni.id)
-                      ? "Remove from Favorites"
-                      : "Add to Favorites"}
-                  </button>
-                </td>
+        <div className="overflow-x-auto mb-6">
+          <table className="min-w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border p-2 text-left">Name</th>
+                <th className="border p-2 text-left">State/Province</th>
+                <th className="border p-2 text-left">Website</th>
+                <th className="border p-2 text-center">Favorite</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {universities.map((uni: any) => (
+                <tr key={uni.id} className="hover:bg-gray-50">
+                  <td className="border p-2">{uni.name}</td>
+                  <td className="border p-2">{uni.stateProvince || "N/A"}</td>
+                  <td className="border p-2">
+                    <a
+                      href={uni.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {uni.website}
+                    </a>
+                  </td>
+                    <td className="border p-2 text-center">
+                    <div className="flex justify-center">
+                      {favorites.some((f) => f.universityId === uni.id) ? (
+                        <button
+                        onClick={() => handleFavoriteToggle(uni.id)}
+                        name="Remove from Favorites"
+                        className="flex items-center justify-center gap-1 text-red-500 text-xl font-bold px-3 py-1 rounded transition duration-200"
+                        >
+                          <i className="fa-solid fa-trash"></i> 
+                       </button>
+                      ) : (
+                      <button
+                      name="Add to Favorites"
+                        onClick={() => handleFavoriteToggle(uni.id)}
+                        className="flex items-center justify-center gap-1 text-blue-500 text-xl font-bold px-3 py-1 rounded transition duration-200"
+                      >
+                        <i className="fas fa-heart"></i>
+                        <span></span>
+                      </button>
+                      )}
+                    </div>
+                    </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-      <div>
-        <Link href="/favorites">Go to Favorites</Link>
+      <div className="text-right">
+        <Link
+          href="/favorites"
+          className="text-blue-500 hover:underline font-medium"
+        >
+          Go to Favorites
+        </Link>
       </div>
     </div>
   );

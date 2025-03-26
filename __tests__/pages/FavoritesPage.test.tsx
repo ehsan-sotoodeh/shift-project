@@ -1,6 +1,12 @@
 // __tests__/pages/FavoritesPage.test.tsx
 import React from "react";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  within,
+} from "@testing-library/react";
 import FavoritesPage from "../../src/app/favorites/page"; // Adjust path as needed
 import "@testing-library/jest-dom";
 
@@ -37,7 +43,7 @@ describe("FavoritesPage Component", () => {
   });
 
   test("shows loading initially and then displays favorites", async () => {
-    // Simulate a successful fetch returning favorites
+    // Simulate a successful fetch returning favorites.
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: async () => favoritesResponse,
     });
@@ -78,7 +84,7 @@ describe("FavoritesPage Component", () => {
 
     render(<FavoritesPage />);
 
-    // Wait for the fetch to complete so that loading is hidden.
+    // Wait until the loading indicator is gone.
     await waitFor(() => {
       expect(screen.queryByText(/Loading favorites/i)).not.toBeInTheDocument();
     });
@@ -90,8 +96,8 @@ describe("FavoritesPage Component", () => {
   });
 
   test("removes a favorite when the remove button is clicked", async () => {
-    // First call: fetch favorites
-    // Second call: DELETE favorite (simulate success)
+    // First call: fetch favorites.
+    // Second call: DELETE favorite (simulate success).
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
         json: async () => favoritesResponse,
@@ -105,24 +111,31 @@ describe("FavoritesPage Component", () => {
     // Wait for favorites to load.
     expect(await screen.findByText("University A")).toBeInTheDocument();
 
-    // Get the remove button for University A.
-    const removeButtons = screen.getAllByRole("button", {
-      name: /Remove from Favorites/i,
-    });
-    const removeButton = removeButtons[0];
+    // Locate the table row that contains "University A".
+    const row = screen.getByText("University A").closest("tr");
+    expect(row).toBeInTheDocument();
+
+    // Use 'within' to find the remove button in that row.
+    const removeButton = within(row!).getByRole("button");
     fireEvent.click(removeButton);
 
     // Wait for the favorite to be removed.
     await waitFor(() => {
       expect(screen.queryByText("University A")).not.toBeInTheDocument();
     });
+
+    // Verify that DELETE was called.
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/api/favorites?id=1"),
+      expect.objectContaining({ method: "DELETE" })
+    );
   });
 
   test("handles error when removing a favorite gracefully", async () => {
     const consoleErrorSpy = jest
       .spyOn(console, "error")
       .mockImplementation(() => {});
-    // First call: fetch favorites (one favorite returned)
+    // First call: fetch favorites (one favorite returned).
     const oneFavoriteResponse = {
       data: [
         {
@@ -139,7 +152,7 @@ describe("FavoritesPage Component", () => {
       .mockResolvedValueOnce({
         json: async () => oneFavoriteResponse,
       })
-      // Second call: DELETE favorite fails
+      // Second call: DELETE favorite fails.
       .mockRejectedValueOnce(new Error("Delete error"));
 
     render(<FavoritesPage />);
@@ -147,10 +160,10 @@ describe("FavoritesPage Component", () => {
     // Wait for the favorite to load.
     expect(await screen.findByText("University A")).toBeInTheDocument();
 
-    // Click the remove button.
-    const removeButton = screen.getByRole("button", {
-      name: /Remove from Favorites/i,
-    });
+    // Locate the row and then find the remove button.
+    const row = screen.getByText("University A").closest("tr");
+    expect(row).toBeInTheDocument();
+    const removeButton = within(row!).getByRole("button");
     fireEvent.click(removeButton);
 
     // Wait for the error to be logged.
