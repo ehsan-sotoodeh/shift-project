@@ -11,6 +11,7 @@ import FavoritesPage from "../../src/app/favorites/page"; // Adjust path as need
 import "@testing-library/jest-dom";
 
 describe("FavoritesPage Component", () => {
+  // Updated favorites response including pagination fields.
   const favoritesResponse = {
     data: [
       {
@@ -30,6 +31,9 @@ describe("FavoritesPage Component", () => {
         },
       },
     ],
+    total: 2,
+    page: 1,
+    pageSize: 10,
   };
 
   beforeEach(() => {
@@ -43,7 +47,7 @@ describe("FavoritesPage Component", () => {
   });
 
   test("shows loading initially and then displays favorites", async () => {
-    // Simulate a successful fetch returning favorites.
+    // Simulate a successful fetch returning favorites with pagination.
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: async () => favoritesResponse,
     });
@@ -60,13 +64,16 @@ describe("FavoritesPage Component", () => {
     // Ensure the table is rendered.
     expect(screen.getByRole("table")).toBeInTheDocument();
 
+    // Verify the pagination text is rendered (e.g., "Page 1 of 1").
+    expect(screen.getByText(/Page 1 of 1/i)).toBeInTheDocument();
+
     // Verify the "Back to Search" link is present.
     expect(screen.getByText("Back to Search")).toBeInTheDocument();
   });
 
   test("displays a message when no favorites are returned", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
-      json: async () => ({ data: [] }),
+      json: async () => ({ data: [], total: 0, page: 1, pageSize: 10 }),
     });
 
     render(<FavoritesPage />);
@@ -96,8 +103,7 @@ describe("FavoritesPage Component", () => {
   });
 
   test("removes a favorite when the remove button is clicked", async () => {
-    // First call: fetch favorites.
-    // Second call: DELETE favorite (simulate success).
+    // First call: fetch favorites; Second call: DELETE favorite (simulate success).
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
         json: async () => favoritesResponse,
@@ -124,7 +130,7 @@ describe("FavoritesPage Component", () => {
       expect(screen.queryByText("University A")).not.toBeInTheDocument();
     });
 
-    // Verify that DELETE was called.
+    // Verify that DELETE was called with the proper URL.
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/api/favorites?id=1"),
       expect.objectContaining({ method: "DELETE" })
@@ -147,6 +153,9 @@ describe("FavoritesPage Component", () => {
           },
         },
       ],
+      total: 1,
+      page: 1,
+      pageSize: 10,
     };
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
