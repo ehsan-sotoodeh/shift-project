@@ -3,6 +3,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast"; // Import toast
 
 export default function SearchPage() {
   const [country, setCountry] = useState("Canada");
@@ -23,12 +24,15 @@ export default function SearchPage() {
   const fetchUniversities = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/universities?country=${country}&name=${name}&page=${page}&pageSize=${pageSize}`);
+      const res = await fetch(
+        `/api/universities?country=${country}&name=${name}&page=${page}&pageSize=${pageSize}`
+      );
       const data = await res.json();
       setUniversities(data.data || []);
       setTotal(data.total || 0);
     } catch (error) {
       console.error("Error fetching universities:", error);
+      toast.error("Error fetching universities.");
     } finally {
       setLoading(false);
     }
@@ -45,6 +49,7 @@ export default function SearchPage() {
       setFavorites(fetchedFavorites);
     } catch (error) {
       console.error("Error fetching favorites:", error);
+      toast.error("Error fetching favorites.");
     }
   };
 
@@ -69,9 +74,11 @@ export default function SearchPage() {
           ...prev,
           { favoriteId: result.data.id, universityId },
         ]);
+        toast.success("Favorite added successfully.");
       }
     } catch (error) {
       console.error("Error adding favorite:", error);
+      toast.error("Error adding favorite.");
     }
   };
 
@@ -81,20 +88,28 @@ export default function SearchPage() {
     );
     if (!selectedFavorite) {
       console.error("Favorite not found for universityId:", universityId);
+      toast.error("Favorite not found.");
       return;
     }
     try {
-      const res = await fetch(`/api/favorites?id=${selectedFavorite.favoriteId}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `/api/favorites?id=${selectedFavorite.favoriteId}`,
+        {
+          method: "DELETE",
+        }
+      );
       const result = await res.json();
       if (result.statusCode === 200) {
         setFavorites((prev) =>
-          prev.filter((f: IFavorite) => f.favoriteId !== selectedFavorite.favoriteId)
+          prev.filter(
+            (f: IFavorite) => f.favoriteId !== selectedFavorite.favoriteId
+          )
         );
+        toast.success("Favorite removed successfully.");
       }
     } catch (error) {
       console.error("Error removing favorite:", error);
+      toast.error("Error removing favorite.");
     }
   };
 
@@ -190,63 +205,71 @@ export default function SearchPage() {
                   <th className="border p-2 text-center">Favorite</th>
                 </tr>
               </thead>
-                <tbody>
+              <tbody>
                 {universities.length > 0 ? (
                   universities.map((uni: any) => (
-                  <tr key={uni.id} className="hover:bg-gray-50">
-                    <td className="border p-2">{uni.name}</td>
-                    <td className="border p-2">{uni.stateProvince || "N/A"}</td>
-                    <td className="border p-2">
-                    <a
-                      href={uni.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
-                    >
-                      {uni.website}
-                    </a>
-                    </td>
-                    <td className="border p-2 text-center">
-                    <div className="flex justify-center">
-                      {favorites.some((f) => f.universityId === uni.id) ? (
-                      <button
-                        onClick={() => handleFavoriteToggle(uni.id)}
-                        name="Remove from Favorites"
-                        className="flex items-center justify-center gap-1 text-red-500 text-xl font-bold px-3 py-1 rounded transition duration-200"
-                      >
-                        <i className="fa-solid fa-trash"></i>
-                      </button>
-                      ) : (
-                      <button
-                        name="Add to Favorites"
-                        onClick={() => handleFavoriteToggle(uni.id)}
-                        className="flex items-center justify-center gap-1 text-blue-500 text-xl font-bold px-3 py-1 rounded transition duration-200"
-                      >
-                        <i className="fas fa-heart"></i>
-                      </button>
-                      )}
-                    </div>
-                    </td>
-                  </tr>
+                    <tr key={uni.id} className="hover:bg-gray-50">
+                      <td className="border p-2">{uni.name}</td>
+                      <td className="border p-2">
+                        {uni.stateProvince || "N/A"}
+                      </td>
+                      <td className="border p-2">
+                        <a
+                          href={uni.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline"
+                        >
+                          {uni.website}
+                        </a>
+                      </td>
+                      <td className="border p-2 text-center">
+                        <div className="flex justify-center">
+                          {favorites.some((f) => f.universityId === uni.id) ? (
+                            <button
+                              onClick={() => handleFavoriteToggle(uni.id)}
+                              name="Remove from Favorites"
+                              className="flex items-center justify-center gap-1 text-red-500 text-xl font-bold px-3 py-1 rounded transition duration-200"
+                            >
+                              <i className="fa-solid fa-trash"></i>
+                            </button>
+                          ) : (
+                            <button
+                              name="Add to Favorites"
+                              onClick={() => handleFavoriteToggle(uni.id)}
+                              className="flex items-center justify-center gap-1 text-blue-500 text-xl font-bold px-3 py-1 rounded transition duration-200"
+                            >
+                              <i className="fas fa-heart"></i>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   ))
                 ) : (
                   <tr>
-                  <td colSpan={4} className="border p-4 text-center text-gray-500">
-                    No universities found based on the search criteria.
-                  </td>
+                    <td
+                      colSpan={4}
+                      className="border p-4 text-center text-gray-500"
+                    >
+                      No universities found based on the search criteria.
+                    </td>
                   </tr>
                 )}
-                </tbody>
+              </tbody>
             </table>
           </div>
           {/* Pagination Controls */}
-            <div className="flex justify-between items-center" style={{ width: "350px", margin: "0 auto" }}>
+          <div
+            className="flex justify-between items-center"
+            style={{ width: "350px", margin: "0 auto" }}
+          >
             <button
               onClick={handlePreviousPage}
               disabled={page === 1}
               className="px-4 py-2 rounded flex items-center gap-2"
             >
-<i className="fa-solid fa-chevron-left"></i>
+              <i className="fa-solid fa-chevron-left"></i>
               Previous
             </button>
             <span className="font-bold text-lg">
@@ -259,9 +282,8 @@ export default function SearchPage() {
             >
               Next
               <i className="fa-solid fa-chevron-right ml-2"></i>
-
             </button>
-            </div>
+          </div>
         </>
       )}
       <div className="text-right mt-4">

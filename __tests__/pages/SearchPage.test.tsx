@@ -3,6 +3,15 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import SearchPage from "../../src/app/search/page";
 import "@testing-library/jest-dom";
 
+// --- MOCK TOAST ---
+// This will allow us to track calls to toast.success and toast.error.
+const toastSuccessMock = jest.fn();
+const toastErrorMock = jest.fn();
+jest.mock("react-hot-toast", () => ({
+  success: (...args) => toastSuccessMock(...args),
+  error: (...args) => toastErrorMock(...args),
+}));
+
 describe("SearchPage Component", () => {
   // Sample data for testing
   const universitiesData = [
@@ -27,6 +36,8 @@ describe("SearchPage Component", () => {
     // Replace global fetch with a jest.fn() before each test.
     global.fetch = jest.fn();
     jest.spyOn(console, "error").mockImplementation(() => {});
+    toastSuccessMock.mockClear();
+    toastErrorMock.mockClear();
   });
 
   afterEach(() => {
@@ -71,9 +82,13 @@ describe("SearchPage Component", () => {
     // Instead of using accessible name, filter by the button's name attribute.
     const addButton = getFavoriteButtonByName("Add to Favorites");
     expect(addButton).toBeInTheDocument();
+
+    // Toasts should not be called in the successful initial load.
+    expect(toastSuccessMock).not.toHaveBeenCalled();
+    expect(toastErrorMock).not.toHaveBeenCalled();
   });
 
-  test("Clear All Filters resets country and name and resets pagination", async () => {
+  test("Clear All Filters resets country, name, and pagination", async () => {
     global.fetch.mockImplementation((url, options) => {
       if (url.includes("/api/universities")) {
         return Promise.resolve({
@@ -187,6 +202,11 @@ describe("SearchPage Component", () => {
         body: JSON.stringify({ universityId: 1 }),
       })
     );
+
+    // Verify that the success toast was shown.
+    expect(toastSuccessMock).toHaveBeenCalledWith(
+      "Favorite added successfully."
+    );
   });
 
   test("removes a favorite when clicking Remove from Favorites", async () => {
@@ -250,6 +270,11 @@ describe("SearchPage Component", () => {
       expect.stringContaining("/api/favorites?id=10"),
       expect.objectContaining({ method: "DELETE" })
     );
+
+    // Verify that the success toast was shown.
+    expect(toastSuccessMock).toHaveBeenCalledWith(
+      "Favorite removed successfully."
+    );
   });
 
   test("handles error in fetchUniversities gracefully", async () => {
@@ -274,6 +299,10 @@ describe("SearchPage Component", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         "Error fetching universities:",
         expect.any(Error)
+      );
+      // Verify that error toast was shown.
+      expect(toastErrorMock).toHaveBeenCalledWith(
+        "Error fetching universities."
       );
     });
 
@@ -314,6 +343,8 @@ describe("SearchPage Component", () => {
         "Error fetching favorites:",
         expect.any(Error)
       );
+      // Verify that error toast was shown.
+      expect(toastErrorMock).toHaveBeenCalledWith("Error fetching favorites.");
     });
   });
 
@@ -365,6 +396,8 @@ describe("SearchPage Component", () => {
         "Error adding favorite:",
         expect.any(Error)
       );
+      // Verify that error toast was shown.
+      expect(toastErrorMock).toHaveBeenCalledWith("Error adding favorite.");
     });
   });
 
@@ -417,6 +450,8 @@ describe("SearchPage Component", () => {
         "Error removing favorite:",
         expect.any(Error)
       );
+      // Verify that error toast was shown.
+      expect(toastErrorMock).toHaveBeenCalledWith("Error removing favorite.");
     });
   });
 });
