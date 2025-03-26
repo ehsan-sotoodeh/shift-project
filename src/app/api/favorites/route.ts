@@ -36,11 +36,21 @@ export async function DELETE(request: Request) {
         if (!favoriteId) {
             return NextResponse.json({ statusCode: 400, error: 'id parameter is required' }, { status: 400 });
         }
+
+        // Check if the favorite record exists
+        const existingFavorite = await prisma.favorite.findUnique({
+            where: { id: parseInt(favoriteId) },
+        });
+
+        if (!existingFavorite) {
+            return NextResponse.json({ statusCode: 404, error: 'Favorite not found' }, { status: 404 });
+        }
+
         const deleted = await prisma.favorite.delete({
             where: { id: parseInt(favoriteId) },
         });
         return NextResponse.json({ statusCode: 200, data: deleted });
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json({ statusCode: 500, error: error.message }, { status: 500 });
     }
 }
