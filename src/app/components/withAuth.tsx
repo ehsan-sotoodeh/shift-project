@@ -1,7 +1,7 @@
 // components/withAuth.tsx
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { JSX, useEffect } from "react";
 
 export function withAuth<P>(WrappedComponent: React.ComponentType<P>) {
   const WithAuthComponent = (props: P) => {
@@ -24,7 +24,7 @@ export function withAuth<P>(WrappedComponent: React.ComponentType<P>) {
 
     if (!user) return null;
 
-    return <WrappedComponent {...props} />;
+    return <WrappedComponent {...(props as P & JSX.IntrinsicAttributes)} />;
   };
 
   WithAuthComponent.displayName = `withAuth(${

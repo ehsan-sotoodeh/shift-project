@@ -44,7 +44,7 @@ jest.mock('next/server', () => {
 
 // Mock requireAuth to return null (i.e. bypass authentication) so the API handler logic runs.
 jest.mock('../../src/app/utils/authMiddleware', () => ({
-    requireAuth: jest.fn(() => null),
+    requireAuth: jest.fn(() => "passed"),
 }));
 // --- END OF MOCKS ---
 

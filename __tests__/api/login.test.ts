@@ -125,7 +125,7 @@ describe("Login API Route", () => {
         expect(mockSign).toHaveBeenCalledWith(
             { userId: fakeUser.id, email: fakeUser.email },
             "test-secret",
-            { expiresIn: "1h" }
+            { expiresIn: 1 }
         );
     });
 

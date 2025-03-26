@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
     const authResult = requireAuth(request);
-    if (authResult && typeof authResult.json === 'function') {
+    if (typeof authResult !== 'string' && authResult && typeof authResult.json === 'function') {
         return authResult;
     }
 

@@ -35,12 +35,12 @@ export async function POST(request: Request) {
         const token = jwt.sign(
             { userId: user.id, email: user.email },
             process.env.JWT_SECRET as string,
-            { expiresIn: process.env.JWT_EXPIRES_IN || '86400s' }
+            { expiresIn: process.env.JWT_EXPIRES_IN ? parseInt(process.env.JWT_EXPIRES_IN, 10) : '86400s' }
         );
 
         // Return the token in the response
         return NextResponse.json({ statusCode: 200, token });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error in login API:", error);
         return NextResponse.json(
             { statusCode: 500, error: 'Internal server error' },

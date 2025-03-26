@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
     const authResult = requireAuth(request);
-    if (authResult && typeof authResult.json === 'function') {
+    if (typeof authResult !== 'string' && typeof authResult.json === 'function') {
         return authResult;
     }
 
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     const authResult = requireAuth(request);
-    if (authResult && typeof authResult.json === 'function') {
+    if (typeof authResult !== 'string' && typeof authResult.json === 'function') {
         return authResult;
     }
 
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
     const authResult = requireAuth(request);
-    if (authResult && typeof authResult.json === 'function') {
+    if (typeof authResult !== 'string' && typeof authResult.json === 'function') {
         return authResult;
     }
 
@@ -109,9 +109,9 @@ export async function DELETE(request: Request) {
             where: { id: parseInt(favoriteId) },
         });
         return NextResponse.json({ statusCode: 200, data: deleted });
-    } catch (error: any) {
+    } catch (error: unknown) {
         return NextResponse.json(
-            { statusCode: 500, error: error.message },
+            { statusCode: 500, error: (error as Error).message },
             { status: 500 }
         );
     }

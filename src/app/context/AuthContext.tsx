@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode"; // Ensure this package is installed
 
 // Define the shape of our auth context.
 interface AuthContextProps {
-  user: any;
+  user: unknown;
   token: string | null;
   login: (token: string) => void;
   logout: () => void;
@@ -16,7 +16,7 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
 
   // On component mount, check if there's a token in localStorage and decode it.

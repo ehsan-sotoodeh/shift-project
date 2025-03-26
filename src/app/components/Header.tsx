@@ -6,7 +6,16 @@ import { useAuth } from "@/app/context/AuthContext";
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const { user, logout, loading } = useAuth();
+  interface User {
+    name?: string;
+    // Add other properties of the user object if needed
+  }
+
+  const { user, logout, loading } = useAuth() as {
+    user: User | null;
+    logout: () => void;
+    loading: boolean;
+  };
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleMenuToggle = () => {

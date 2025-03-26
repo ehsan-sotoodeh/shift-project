@@ -31,6 +31,7 @@ function FavoritesPage() {
 
   useEffect(() => {
     fetchFavorites();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const removeFavorite = async (id: number) => {
