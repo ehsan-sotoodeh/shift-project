@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -42,10 +44,10 @@ export default function SearchPage() {
       const res = await fetch("/api/favorites");
       const data = await res.json();
       // Assuming the API returns an array of favorite objects with a universityId field.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fetchedFavorites = data.data.map((fav: any): IFavorite => {
         return { favoriteId: fav.id, universityId: fav.universityId };
       });
-      console.log("Fetched favorites:", fetchedFavorites);
       setFavorites(fetchedFavorites);
     } catch (error) {
       console.error("Error fetching favorites:", error);

@@ -1,15 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: Request) {
+
     try {
         const favorites = await prisma.favorite.findMany({
             include: { university: true },
         });
         return NextResponse.json({ statusCode: 200, data: favorites });
     } catch (error) {
-        return NextResponse.json({ statusCode: 500, error: error.message }, { status: 500 });
+        return NextResponse.json({ statusCode: 500, error: (error as Error).message }, { status: 500 });
     }
 }
 
@@ -25,7 +28,7 @@ export async function POST(request: Request) {
         });
         return NextResponse.json({ statusCode: 201, data: favorite });
     } catch (error) {
-        return NextResponse.json({ statusCode: 500, error: error.message }, { status: 500 });
+        return NextResponse.json({ statusCode: 500, error: (error as Error).message }, { status: 500 });
     }
 }
 

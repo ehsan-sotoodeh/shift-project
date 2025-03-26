@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
@@ -25,10 +26,11 @@ export async function GET(request: Request) {
         });
     } catch (error) {
         console.log(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return NextResponse.json({
             statusCode: 500,
             message: 'Internal Server Error',
-            error: error.message,
+            error: errorMessage,
         }, { status: 500 });
     }
 }
