@@ -1,5 +1,7 @@
 // __tests__/api/favorites.test.ts
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // --- MOCKS (must be at the very top) ---
 var mockFavoriteFindMany: jest.Mock;
 var mockFavoriteFindUnique: jest.Mock;
@@ -39,6 +41,11 @@ jest.mock('next/server', () => {
         },
     };
 });
+
+// Mock requireAuth to return null (i.e. bypass authentication) so the API handler logic runs.
+jest.mock('../../src/app/utils/authMiddleware', () => ({
+    requireAuth: jest.fn(() => null),
+}));
 // --- END OF MOCKS ---
 
 import {
