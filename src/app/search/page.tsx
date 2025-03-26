@@ -89,10 +89,6 @@ export default function SearchPage() {
       console.error("Favorite not found for universityId:", universityId);
       return;
     }
-    if (!selectedFavorite) {
-      console.error("Favorite not found for universityId:", universityId);
-      return;
-    }
     try {
       const res = await fetch(
         `/api/favorites?id=${selectedFavorite.favoriteId}`,

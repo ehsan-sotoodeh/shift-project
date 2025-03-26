@@ -26,7 +26,8 @@ export async function POST(request: Request) {
         const favorite = await prisma.favorite.create({
             data: { universityId },
         });
-        return NextResponse.json({ statusCode: 201, data: favorite });
+        return NextResponse.json({ statusCode: 201, data: favorite }, { status: 201 }
+        );
     } catch (error) {
         return NextResponse.json({ statusCode: 500, error: (error as Error).message }, { status: 500 });
     }
