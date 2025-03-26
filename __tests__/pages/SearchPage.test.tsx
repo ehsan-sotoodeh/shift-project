@@ -14,11 +14,11 @@ describe("SearchPage Component", () => {
     },
   ];
 
-  const favoritesDataEmpty: any[] = [];
+  const favoritesDataEmpty = [];
   const favoritesDataWithEntry = [{ id: 10, universityId: 1 }];
 
   // Helper function to get a favorite button by its custom name attribute.
-  const getFavoriteButtonByName = (expectedName: string) => {
+  const getFavoriteButtonByName = (expectedName) => {
     const allButtons = screen.getAllByRole("button");
     return allButtons.find((btn) => btn.getAttribute("name") === expectedName);
   };
@@ -34,9 +34,9 @@ describe("SearchPage Component", () => {
     jest.clearAllMocks();
   });
 
-  test("renders initial data from APIs", async () => {
-    // Setup fetch to return universities and favorites for GET calls
-    (global.fetch as jest.Mock).mockImplementation((url, options) => {
+  test("renders initial data from APIs with pagination controls", async () => {
+    // Setup fetch to return universities (with total count) and favorites for GET calls.
+    global.fetch.mockImplementation((url, options) => {
       if (url.includes("/api/universities")) {
         return Promise.resolve({
           json: () =>
@@ -44,6 +44,9 @@ describe("SearchPage Component", () => {
               statusCode: 200,
               responseTime: 100,
               data: universitiesData,
+              total: universitiesData.length,
+              page: 1,
+              pageSize: 10,
             }),
         });
       }
@@ -57,18 +60,21 @@ describe("SearchPage Component", () => {
 
     render(<SearchPage />);
 
-    // Wait until the university name is rendered
+    // Wait until the university name is rendered.
     expect(await screen.findByText("University A")).toBeInTheDocument();
     expect(screen.getByText("Ontario")).toBeInTheDocument();
     expect(screen.getByText("http://uni-a.com")).toBeInTheDocument();
+
+    // Verify that pagination text is rendered (e.g., "Page 1 of 1").
+    expect(screen.getByText(/Page 1 of 1/i)).toBeInTheDocument();
 
     // Instead of using accessible name, filter by the button's name attribute.
     const addButton = getFavoriteButtonByName("Add to Favorites");
     expect(addButton).toBeInTheDocument();
   });
 
-  test("Clear All Filters resets country and name", async () => {
-    (global.fetch as jest.Mock).mockImplementation((url, options) => {
+  test("Clear All Filters resets country and name and resets pagination", async () => {
+    global.fetch.mockImplementation((url, options) => {
       if (url.includes("/api/universities")) {
         return Promise.resolve({
           json: () =>
@@ -76,6 +82,9 @@ describe("SearchPage Component", () => {
               statusCode: 200,
               responseTime: 100,
               data: universitiesData,
+              total: universitiesData.length,
+              page: 1,
+              pageSize: 10,
             }),
         });
       }
@@ -88,7 +97,7 @@ describe("SearchPage Component", () => {
     });
 
     render(<SearchPage />);
-    // Wait for initial data to load
+    // Wait for initial data to load.
     await screen.findByText("University A");
 
     // Change the country and name input values.
@@ -98,8 +107,8 @@ describe("SearchPage Component", () => {
     fireEvent.change(input, { target: { value: "Test University" } });
 
     // Verify the values changed.
-    expect((select as HTMLSelectElement).value).toBe("United States");
-    expect((input as HTMLInputElement).value).toBe("Test University");
+    expect(select.value).toBe("United States");
+    expect(input.value).toBe("Test University");
 
     // Click the "Clear All Filters" button.
     const clearButton = screen.getByRole("button", {
@@ -108,13 +117,13 @@ describe("SearchPage Component", () => {
     fireEvent.click(clearButton);
 
     // Verify that the filters reset to defaults.
-    expect((select as HTMLSelectElement).value).toBe("Canada");
-    expect((input as HTMLInputElement).value).toBe("");
+    expect(select.value).toBe("Canada");
+    expect(input.value).toBe("");
   });
 
   test("adds a favorite when clicking Add to Favorites", async () => {
     // Setup: GET endpoints for universities and favorites; POST for adding favorite.
-    (global.fetch as jest.Mock).mockImplementation((url, options) => {
+    global.fetch.mockImplementation((url, options) => {
       if (url.includes("/api/universities")) {
         return Promise.resolve({
           json: () =>
@@ -122,6 +131,9 @@ describe("SearchPage Component", () => {
               statusCode: 200,
               responseTime: 100,
               data: universitiesData,
+              total: universitiesData.length,
+              page: 1,
+              pageSize: 10,
             }),
         });
       }
@@ -158,9 +170,9 @@ describe("SearchPage Component", () => {
     expect(favButton).toBeInTheDocument();
 
     // Click to add favorite.
-    fireEvent.click(favButton!);
+    fireEvent.click(favButton);
 
-    // Wait for the state update so that the button now reflects removal (by its name attribute).
+    // Wait for the state update so that the button now reflects removal.
     await waitFor(() => {
       const removeButton = getFavoriteButtonByName("Remove from Favorites");
       expect(removeButton).toBeInTheDocument();
@@ -179,7 +191,7 @@ describe("SearchPage Component", () => {
 
   test("removes a favorite when clicking Remove from Favorites", async () => {
     // Setup: GET returns a favorite for the university; DELETE simulates successful removal.
-    (global.fetch as jest.Mock).mockImplementation((url, options) => {
+    global.fetch.mockImplementation((url, options) => {
       if (url.includes("/api/universities")) {
         return Promise.resolve({
           json: () =>
@@ -187,6 +199,9 @@ describe("SearchPage Component", () => {
               statusCode: 200,
               responseTime: 100,
               data: universitiesData,
+              total: universitiesData.length,
+              page: 1,
+              pageSize: 10,
             }),
         });
       }
@@ -222,7 +237,7 @@ describe("SearchPage Component", () => {
     expect(favButton).toBeInTheDocument();
 
     // Click to remove favorite.
-    fireEvent.click(favButton!);
+    fireEvent.click(favButton);
 
     // Wait for state update so that the button reverts to "Add to Favorites".
     await waitFor(() => {
@@ -241,7 +256,7 @@ describe("SearchPage Component", () => {
     const consoleErrorSpy = jest
       .spyOn(console, "error")
       .mockImplementation(() => {});
-    (global.fetch as jest.Mock).mockImplementation((url) => {
+    global.fetch.mockImplementation((url) => {
       if (url.includes("/api/universities")) {
         return Promise.reject(new Error("University fetch error"));
       }
@@ -272,7 +287,7 @@ describe("SearchPage Component", () => {
     const consoleErrorSpy = jest
       .spyOn(console, "error")
       .mockImplementation(() => {});
-    (global.fetch as jest.Mock).mockImplementation((url) => {
+    global.fetch.mockImplementation((url) => {
       if (url.includes("/api/universities")) {
         return Promise.resolve({
           json: () =>
@@ -280,6 +295,9 @@ describe("SearchPage Component", () => {
               statusCode: 200,
               responseTime: 100,
               data: universitiesData,
+              total: universitiesData.length,
+              page: 1,
+              pageSize: 10,
             }),
         });
       }
@@ -303,7 +321,7 @@ describe("SearchPage Component", () => {
     const consoleErrorSpy = jest
       .spyOn(console, "error")
       .mockImplementation(() => {});
-    (global.fetch as jest.Mock).mockImplementation((url, options) => {
+    global.fetch.mockImplementation((url, options) => {
       if (url.includes("/api/universities")) {
         return Promise.resolve({
           json: () =>
@@ -311,6 +329,9 @@ describe("SearchPage Component", () => {
               statusCode: 200,
               responseTime: 100,
               data: universitiesData,
+              total: universitiesData.length,
+              page: 1,
+              pageSize: 10,
             }),
         });
       }
@@ -337,7 +358,7 @@ describe("SearchPage Component", () => {
 
     // Click the Add to Favorites button.
     const favButton = getFavoriteButtonByName("Add to Favorites");
-    fireEvent.click(favButton!);
+    fireEvent.click(favButton);
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -352,7 +373,7 @@ describe("SearchPage Component", () => {
       .spyOn(console, "error")
       .mockImplementation(() => {});
     // Setup: initial GET returns a favorite and DELETE fails.
-    (global.fetch as jest.Mock).mockImplementation((url, options) => {
+    global.fetch.mockImplementation((url, options) => {
       if (url.includes("/api/universities")) {
         return Promise.resolve({
           json: () =>
@@ -360,6 +381,9 @@ describe("SearchPage Component", () => {
               statusCode: 200,
               responseTime: 100,
               data: universitiesData,
+              total: universitiesData.length,
+              page: 1,
+              pageSize: 10,
             }),
         });
       }
@@ -386,7 +410,7 @@ describe("SearchPage Component", () => {
 
     // The button should initially have the custom name attribute "Remove from Favorites".
     const favButton = getFavoriteButtonByName("Remove from Favorites");
-    fireEvent.click(favButton!);
+    fireEvent.click(favButton);
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
